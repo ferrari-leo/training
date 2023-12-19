@@ -47,20 +47,27 @@ myfile.close()
 
 # allow read and write access (WARNING - w+ does a truncation on the original)
 myfile = open("test.txt", "w+")
-myfile.read()  # returns an empty string
+print(myfile.read())  # returns an empty string
 myfile.write("brand new text")
+myfile.seek(0)
+print(myfile.read())
+myfile.close()
+
+# appending text
+myfile = open("whoops.txt", "a+")  # file doesn't exist so gets created
+myfile.write("my first line in a+ opening")
+myfile.close()
+
+newfile = open("whoops.txt")
+newfile.read()
+newfile.close()
+
+myfile = open("whoops.txt", "a+")
+myfile.write("\nthis is an added line because I used a+ mode")
 myfile.seek(0)
 myfile.read()
 
-ls = [
-    "hhhhhhhhhh",
-    "hhhhhhhhhh",
-    "hhhhhhhhhh",
-    "hhhhhhhhhh",
-    "hhhhhhhhhh", 'hhh',
-
-    "hhhhhhhhhh",
-    "hhhhhhhhhh",
-    "hhhhhhhhhh",
-]
+# use context manager
+with open("whoops.txt", "r") as mynewfile:
+    myvar = mynewfile.readlines()
 # endregion
