@@ -1,0 +1,3 @@
+[submodule "Causal-Inference-and-Discovery-in-Python"]
+	path = Causal-Inference-and-Discovery-in-Python
+	url = https://github.com/PacktPublishing/Causal-Inference-and-Discovery-in-Python.git
