@@ -27,6 +27,40 @@ def get_cost(context, action):
             return USER_DISLIKED_ARTICLE
 
 
+def get_cost_new1(context, action):
+    if context["user"] == "Tom":
+        if context["time_of_day"] == "morning" and action == "politics":
+            return USER_LIKED_ARTICLE
+        elif context["time_of_day"] == "afternoon" and action == "sports":
+            return USER_LIKED_ARTICLE
+        else:
+            return USER_DISLIKED_ARTICLE
+    elif context["user"] == "Anna":
+        if context["time_of_day"] == "morning" and action == "sports":
+            return USER_LIKED_ARTICLE
+        elif context["time_of_day"] == "afternoon" and action == "sports":
+            return USER_LIKED_ARTICLE
+        else:
+            return USER_DISLIKED_ARTICLE
+
+
+def get_cost_new2(context, action):
+    if context["user"] == "Tom":
+        if context["time_of_day"] == "morning" and action == "food":
+            return USER_LIKED_ARTICLE
+        elif context["time_of_day"] == "afternoon" and action == "sports":
+            return USER_LIKED_ARTICLE
+        else:
+            return USER_DISLIKED_ARTICLE
+    elif context["user"] == "Anna":
+        if context["time_of_day"] == "morning" and action == "music":
+            return USER_LIKED_ARTICLE
+        elif context["time_of_day"] == "afternoon" and action == "food":
+            return USER_LIKED_ARTICLE
+        else:
+            return USER_DISLIKED_ARTICLE
+
+
 # Modify (context, action, cost, probability) to VW friendly format
 def to_vw_example_format(context, actions, cb_label=None):
     if cb_label is not None:
@@ -118,6 +152,45 @@ def run_simulation(
 
         # negate so on diagram it's maximising reward
         ctr.append(-1 * cost_sum / i)
+
+    return ctr
+
+
+def run_simulation_multiple_cost_functions(
+    vw, num_iterations, users, times_of_day, actions, cost_functions, do_learn=True
+):
+    cost_sum = 0.0
+    ctr = []
+
+    start_counter = 1
+    end_counter = start_counter + num_iterations
+    for cost_function in cost_functions:
+        for i in range(start_counter, end_counter):
+            # choose a user
+            user = choose_user(users)
+            # choose time of day
+            time_of_day = choose_time_of_day(times_of_day)
+            # pass context to VW to get an action
+            context = {"user": user, "time_of_day": time_of_day}
+            action, prob = get_action(vw, context, actions)
+            # get cost of the action
+            cost = cost_function(context, action)
+            cost_sum += cost
+
+            if do_learn:
+                # inform VW of what happen so it can learn
+                vw_format = vw.parse(
+                    to_vw_example_format(context, actions, (action, cost, prob)),
+                    vowpalwabbit.LabelType.CONTEXTUAL_BANDIT,
+                )
+                # learn
+                vw.learn(vw_format)
+
+            # negate so on diagram it's maximising reward
+            ctr.append(-1 * cost_sum / i)
+
+        start_counter = end_counter
+        end_counter = start_counter + num_iterations
 
     return ctr
 
